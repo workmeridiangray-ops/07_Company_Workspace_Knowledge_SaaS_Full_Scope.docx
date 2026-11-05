@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Pages' };
 export default async function Pages({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ts?: string; show?: string }> }) {
   const slug = (await params).slug; const sp = await searchParams; const c = await requireCtx(slug);
   const tsList = all<any>('SELECT * FROM teamspaces WHERE ws=? AND archived=0 ORDER BY name', c.ws.id);
-  let rows = visiblePages(c, `AND kind IN ('page','meeting')`); if (sp.ts) rows = rows.filter(r => r.teamspace_id === sp.ts);
+  let rows = visiblePages(c, `AND kind IN ('page','meeting') AND record_id IS NULL`); if (sp.ts) rows = rows.filter(r => r.teamspace_id === sp.ts);
   if (sp.show !== 'archived') rows = rows.filter(r => !r.archived);
   const tree = pagesTree(c, rows); const canCreate = c.perms.has('content.create');
   return (

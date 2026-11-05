@@ -25,7 +25,7 @@ export function savePage(c: Ctx, pageId: string, o: { title: string; body: unkno
   writableWorkspace(c);
   const g = getPage(c, pageId, 'edit'); if (!g) return { ok: false, error: 'You no longer have permission to edit this page.' };
   const p = g.page; if (p.deleted_at) return { ok: false, error: 'This page is in the trash. Restore it to keep editing.' };
-  if (p.kind === 'sop' && one<any>('SELECT state FROM sops WHERE page_id=?', pageId)?.state === 'published') return { ok: false, error: 'Published SOPs are read-only. Start a new draft version from the SOP screen.' };
+  if (p.kind === 'sop') { const st = one<any>('SELECT state FROM sops WHERE page_id=?', pageId)?.state; if (st && st !== 'draft') return { ok: false, error: st === 'review' ? 'This SOP is in review and locked. Ask the reviewer to return it to draft, or approve it.' : 'This SOP is not editable. Start a new draft version from the SOP screen.' }; }
   let body: Block[]; try { body = sanitizeBlocks(o.body); } catch (e: any) { return { ok: false, error: e.message }; }
   const title = (o.title || 'Untitled').slice(0, 200);
   return tx(() => {

@@ -29,7 +29,7 @@ export default async function PageView({ params }: { params: Promise<{ slug: str
   const children = visiblePages(c, 'AND parent_id=?', id);
   const fav = !!one('SELECT 1 FROM favourites WHERE user_id=? AND page_id=?', c.user.id, id);
   const sop = page.kind === 'sop' ? one<any>('SELECT * FROM sops WHERE page_id=?', id) : null;
-  const locked = sop?.state === 'published' ? 'Published SOP - read only' : page.deleted_at ? 'In trash' : undefined;
+  const locked = sop && sop.state !== 'draft' ? `SOP ${sop.state} - read only` : page.deleted_at ? 'In trash' : undefined;
   const readOnly = level === 'view' || level === 'comment' || !!locked || ['suspended', 'expired', 'closed', 'closing'].includes(c.ws.status);
   const canShare = c.perms.has('content.share') && level === 'edit';
   const tsAll = all<any>('SELECT id,name FROM teamspaces WHERE ws=? AND archived=0 ORDER BY name', c.ws.id);

@@ -23,8 +23,12 @@ const baseMemberLevel = (c: Ctx): Level => (c.perms.has('content.edit') ? 'edit'
 export interface PageLike { id: string; ws: string; teamspace_id: string | null; parent_id: string | null; owner: string | null; visibility: string; deleted_at?: string | null }
 
 /** Effective level on a page: own rules, then ancestors' explicit shares (inheritance). Cross-tenant ids always resolve to 'none'. */
-export function pageLevel(c: Ctx, p: PageLike | undefined | null): Level {
+export function pageLevel(c: Ctx, p: (PageLike & { record_id?: string | null }) | undefined | null): Level {
   if (!p || p.ws !== c.ws.id) return 'none';
+  if (p.record_id) { // a record opened as a page inherits the record's access, never the page's visibility
+    const r = one<any>('SELECT * FROM records WHERE id=? AND ws=?', p.record_id, c.ws.id); const d = r && one<any>('SELECT * FROM databases WHERE id=? AND ws=?', r.db_id, c.ws.id);
+    return r && d ? recordLevel(c, r, d) : 'none';
+  }
   let lvl: Level = 'none';
   if (p.owner === c.user.id) lvl = 'edit';
   let cur: PageLike | undefined | null = p; let guard = 0;

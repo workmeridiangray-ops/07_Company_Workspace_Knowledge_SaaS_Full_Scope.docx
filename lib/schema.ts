@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS jobs(
   id TEXT PRIMARY KEY, ws TEXT, kind TEXT NOT NULL, payload TEXT, status TEXT DEFAULT 'pending', attempts INTEGER DEFAULT 0, max_attempts INTEGER DEFAULT 5,
   error TEXT, dedupe_key TEXT UNIQUE, run_after TEXT, created_at TEXT, updated_at TEXT);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, to_email TEXT NOT NULL, subject TEXT, body TEXT, status TEXT DEFAULT 'queued', error TEXT, created_at TEXT);
+CREATE TABLE IF NOT EXISTS idempotency(key TEXT PRIMARY KEY, ws TEXT NOT NULL, result TEXT, created_at TEXT);
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT);
 
 CREATE TABLE IF NOT EXISTS teamspaces(id TEXT PRIMARY KEY, ws TEXT NOT NULL, name TEXT NOT NULL, description TEXT, icon TEXT DEFAULT 'folder', visibility TEXT DEFAULT 'open', archived INTEGER DEFAULT 0, created_at TEXT);

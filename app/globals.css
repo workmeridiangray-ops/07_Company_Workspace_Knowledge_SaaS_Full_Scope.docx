@@ -1,0 +1,23 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+:root { color-scheme: light; }
+html { -webkit-text-size-adjust: 100%; }
+body { @apply bg-bg text-ink font-sans antialiased text-[15px] leading-6; }
+:focus-visible { outline: 3px solid #244B78; outline-offset: 2px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+@layer components {
+  .btn { @apply inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply btn bg-brand text-white hover:bg-brandDark; }
+  .btn-secondary { @apply btn border border-line bg-surface text-ink hover:bg-bg; }
+  .btn-danger { @apply btn bg-bad text-white hover:opacity-90; }
+  .btn-ghost { @apply btn text-muted hover:bg-brandSoft hover:text-brand; }
+  .btn-sm { @apply min-h-[32px] px-3 text-[13px]; }
+  .card { @apply rounded-lg border border-line bg-surface; }
+  .input { @apply min-h-[40px] w-full rounded-lg border border-line bg-white px-3 text-[15px] text-ink placeholder:text-muted/70; }
+  textarea.input { @apply py-2; }
+  .label { @apply mb-1 block text-sm font-medium text-ink; }
+  .hint { @apply mt-1 text-[13px] text-muted; }
+  .th { @apply px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted; }
+  .td { @apply px-3 py-2.5 align-top; }
+  .link { @apply text-brand underline underline-offset-2 hover:text-brandDark; }
+  .prose-doc h1 { @apply text-3xl font-semibold mt-6 mb-2; } .prose-doc h2 { @apply text-2xl font-semibold mt-5 mb-2; } .prose-doc h3 { @apply text-xl font-semibold mt-4 mb-1; }
+}

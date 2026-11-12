@@ -84,7 +84,7 @@ export async function saveViewAction(slug: string, dbId: string, _p: ActionResul
   return guard(async () => {
     const c = await requireCtx(slug); const cfg: D.ViewCfg = { filters: [], sorts: [] };
     for (let i = 0; i < 3; i++) { const prop = str(fd, `fp${i}`), op = str(fd, `fo${i}`); if (prop && op) cfg.filters!.push({ prop, op, value: str(fd, `fv${i}`) }); }
-    const sp = str(fd, 'sort'); if (sp) cfg.sorts!.push({ prop: sp, dir: str(fd, 'dir') === 'desc' ? 'desc' : 'asc' }); if (str(fd, 'group')) cfg.group = str(fd, 'group'); if (str(fd, 'dateProp')) cfg.dateProp = str(fd, 'dateProp'); cfg.density = str(fd, 'density') === 'compact' ? 'compact' : 'comfortable'; cfg.hidden = fd.getAll('hidden').map(String);
+    const sp = str(fd, 'sort'); if (sp) cfg.sorts!.push({ prop: sp, dir: str(fd, 'dir') === 'desc' ? 'desc' : 'asc' }); if (str(fd, 'group')) cfg.group = str(fd, 'group'); if (str(fd, 'dateProp')) cfg.dateProp = str(fd, 'dateProp'); if (str(fd, 'startProp')) cfg.startProp = str(fd, 'startProp'); if (str(fd, 'endProp')) cfg.endProp = str(fd, 'endProp'); cfg.density = str(fd, 'density') === 'compact' ? 'compact' : 'comfortable'; cfg.hidden = fd.getAll('hidden').map(String);
     const vid = D.createView(c, dbId, need(str(fd, 'name', 60), 'Name the view.'), str(fd, 'type', 10) || 'table', cfg, fd.get('shared') === 'on'); return { ok: true, redirect: `/w/${slug}/databases/${dbId}?view=${vid}` };
   });
 }

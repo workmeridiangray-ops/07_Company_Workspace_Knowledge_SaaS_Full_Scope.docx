@@ -24,17 +24,18 @@ export function seedSampleData(wsId: string, userId: string, teamspaceId: string
   const deliv = createDatabase(c, 'Deliverables', [
     { id: 'name', name: 'Deliverable', type: 'text', title: true },
     { id: 'stage', name: 'Stage', type: 'select', options: [{ id: 'todo', name: 'To do' }, { id: 'doing', name: 'In progress' }, { id: 'review', name: 'In review' }, { id: 'done', name: 'Done' }] },
-    { id: 'due', name: 'Due', type: 'date' }, { id: 'fee', name: 'Fee (INR)', type: 'number' },
+    { id: 'start', name: 'Start', type: 'date' }, { id: 'due', name: 'Due', type: 'date' }, { id: 'fee', name: 'Fee (INR)', type: 'number' },
   ], teamspaceId);
   const relId = addProp(c, deliv, { name: 'Client', type: 'relation', relDb: clients });
   addProp(c, deliv, { name: 'Client status', type: 'lookup', relProp: relId, lookupProp: 'status' });
   addProp(c, clients, { name: 'Open deliverables', type: 'relation', relDb: deliv });
-  const d1 = createRecord(c, deliv, { name: 'Brand audit', stage: 'doing', due: addDays(today, 6), fee: 90000, [relId]: [c1] });
-  createRecord(c, deliv, { name: 'Website proposal', stage: 'review', due: addDays(today, 3), fee: 150000, [relId]: [c1] });
-  createRecord(c, deliv, { name: 'Packaging concepts', stage: 'todo', due: addDays(today, 14), fee: 120000, [relId]: [c2] });
-  createRecord(c, deliv, { name: 'Launch deck', stage: 'done', due: addDays(today, -5), fee: 60000, [relId]: [c2] });
+  const d1 = createRecord(c, deliv, { name: 'Brand audit', stage: 'doing', start: addDays(today, -4), due: addDays(today, 6), fee: 90000, [relId]: [c1] });
+  createRecord(c, deliv, { name: 'Website proposal', stage: 'review', start: addDays(today, -2), due: addDays(today, 3), fee: 150000, [relId]: [c1] });
+  createRecord(c, deliv, { name: 'Packaging concepts', stage: 'todo', start: addDays(today, 5), due: addDays(today, 14), fee: 120000, [relId]: [c2] });
+  createRecord(c, deliv, { name: 'Launch deck', stage: 'done', start: addDays(today, -20), due: addDays(today, -5), fee: 60000, [relId]: [c2] });
   createView(c, deliv, 'Board by stage', 'board', { group: 'stage' }, true);
   createView(c, deliv, 'Calendar', 'calendar', { dateProp: 'due' }, true);
+  createView(c, deliv, 'Timeline', 'timeline', { startProp: 'start', endProp: 'due' }, true);
   createView(c, clients, 'Active clients', 'table', { filters: [{ prop: 'status', op: 'eq', value: 'active' }], sorts: [{ prop: 'value', dir: 'desc' }] }, true);
   const pid = createProject(c, { name: 'Acme website relaunch', description: 'Strategy, design and build of the new storefront.', start: addDays(today, -10), due: addDays(today, 45), record: c1 });
   addMilestone(c, pid, 'Discovery complete', addDays(today, 5)); addMilestone(c, pid, 'Design approved', addDays(today, 20)); addMilestone(c, pid, 'Launch', addDays(today, 45));

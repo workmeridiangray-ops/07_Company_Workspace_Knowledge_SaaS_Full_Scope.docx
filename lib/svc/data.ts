@@ -11,7 +11,7 @@ export const PROP_TYPES = ['text', 'number', 'date', 'select', 'multiselect', 'p
 export type PropType = (typeof PROP_TYPES)[number];
 export interface Opt { id: string; name: string; color?: string }
 export interface Prop { id: string; name: string; type: PropType; options?: Opt[]; relDb?: string; relProp?: string; lookupProp?: string; agg?: 'count' | 'sum' | 'min' | 'max' | 'avg'; required?: boolean; title?: boolean }
-export interface ViewCfg { filters?: { prop: string; op: string; value?: any }[]; sorts?: { prop: string; dir: 'asc' | 'desc' }[]; group?: string; hidden?: string[]; density?: 'compact' | 'comfortable'; dateProp?: string }
+export interface ViewCfg { startProp?: string; endProp?: string; filters?: { prop: string; op: string; value?: any }[]; sorts?: { prop: string; dir: 'asc' | 'desc' }[]; group?: string; hidden?: string[]; density?: 'compact' | 'comfortable'; dateProp?: string }
 export const COMPUTED: PropType[] = ['lookup', 'rollup'];
 export const OPS: Record<string, [string, string][]> = {
   text: [['contains', 'contains'], ['eq', 'is'], ['neq', 'is not'], ['empty', 'is empty'], ['notempty', 'is not empty']], url: [['contains', 'contains'], ['empty', 'is empty'], ['notempty', 'is not empty']],
@@ -193,11 +193,15 @@ export function applyView(props: Prop[], rows: any[], cfg: ViewCfg, extraFilters
   return out;
 }
 export function createView(c: Ctx, dbId: string, name: string, type: string, cfg: ViewCfg, shared: boolean) {
-  const g = getDb(c, dbId, 'view'); if (!g) throw new Forbidden('content.view'); if (!['table', 'board', 'calendar', 'list'].includes(type)) throw new Invalid('Unknown view type.');
+  const g = getDb(c, dbId, 'view'); if (!g) throw new Forbidden('content.view'); if (!['table', 'board', 'calendar', 'list', 'timeline'].includes(type)) throw new Invalid('Unknown view type.');
   if (shared) assertCan(c, 'schema.manage'); else if (!c.perms.has('content.view')) throw new Forbidden('content.view'); writableWorkspace(c);
   const props = dbProps(g.db);
   if (type === 'board' && !cfg.group) { const sel = props.find(p => p.type === 'select'); if (!sel) throw new Invalid('Board views need a select property to group by. Add a Status property first.'); cfg.group = sel.id; }
   if (type === 'calendar' && !cfg.dateProp) { const dp = props.find(p => p.type === 'date'); if (!dp) throw new Invalid('Calendar views need a date property.'); cfg.dateProp = dp.id; }
+  if (type === 'timeline') {
+    const dps = props.filter(p => p.type === 'date'); if (!dps.length) throw new Invalid('Timeline views need a date property.');
+    if (!cfg.startProp || !dps.some(p => p.id === cfg.startProp)) cfg.startProp = dps[0].id; if (cfg.endProp && !dps.some(p => p.id === cfg.endProp)) throw new Invalid('The end date must be a date property.'); if (!cfg.endProp && dps.length > 1) cfg.endProp = dps.find(p => p.id !== cfg.startProp)!.id;
+  }
   const vId = id('vw_'); insert('views', { id: vId, ws: c.ws.id, db_id: dbId, name: name.trim().slice(0, 60) || 'Untitled view', type, config: JSON.stringify(cfg), shared: shared ? 1 : 0, owner: c.user.id, created_at: now() }); return vId;
 }
 export function updateView(c: Ctx, viewId: string, patch: { name?: string; config?: ViewCfg }) {

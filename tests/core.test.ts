@@ -171,3 +171,17 @@ describe('jobs, forms, audit, security primitives', () => {
     expect(totp('GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ', 59000)).toBe('287082'); // RFC 6238 test vector (last 6 digits)
   });
 });
+
+import { layoutTimeline, defaultFrom } from '@/lib/timeline';
+describe('timeline layout', () => {
+  it('places, clips and reports items instead of dropping them', () => {
+    const r = layoutTimeline([{ id: 'a', title: 'A', start: '2026-03-02', end: '2026-03-08' }, { id: 'b', title: 'B', start: '2026-02-20', end: '2026-03-03' }, { id: 'c', title: 'C', start: null, end: null }, { id: 'd', title: 'D', start: '2026-06-01', end: null }, { id: 'e', title: 'E', start: '2026-03-10', end: '2026-03-01' }], '2026-03-01', 30);
+    const a = r.placed.find(p => p.id === 'a')!; expect(a.left).toBeCloseTo((1 / 30) * 100); expect(a.width).toBeCloseTo((7 / 30) * 100);
+    expect(r.placed.find(p => p.id === 'b')!.clippedL).toBe(true); expect(r.undated.map(i => i.id)).toEqual(['c']); expect(r.outside.map(i => i.id)).toEqual(['d']); expect(r.placed.find(p => p.id === 'e')!.width).toBeGreaterThan(0);
+  });
+  it('defaults to the week of the earliest date', () => { expect(defaultFrom([{ id: 'x', title: 'x', start: '2026-03-04', end: null }], '2026-01-01')).toBe('2026-03-01'); });
+  it('timeline views require a date property and validate type', () => {
+    const d = createDatabase(cA, 'TL', [{ id: 'name', name: 'Name', type: 'text', title: true }]); expect(() => createView(cA, d, 'T', 'timeline', {}, true)).toThrow(/date property/);
+    addProp(cA, d, { name: 'Start', type: 'date' }); expect(() => createView(cA, d, 'T', 'timeline', {}, true)).not.toThrow();
+  });
+});

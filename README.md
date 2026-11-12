@@ -20,7 +20,7 @@ Copy `.env.example` to `.env` and set at least `APP_URL`, `PLATFORM_OWNER_EMAIL/
 
 ## Test
 ```bash
-npm run typecheck && npm test        # 27 integration tests: isolation, access, billing, conflicts, SOPs, imports…
+npm run typecheck && npm test        # 30 integration tests: isolation, access, billing, conflicts, SOPs, imports…
 npm run build && npm run demo        # then, with the server running:
 PORT=3000 npm run e2e                # every screen for every role + real browser flows
 PORT=3000 npm run a11y               # axe WCAG 2.x A/AA scan

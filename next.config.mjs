@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 export default {
-  output: 'standalone',
   poweredByHeader: false,
   experimental: { serverActions: { bodySizeLimit: '12mb' } },
   async headers() {

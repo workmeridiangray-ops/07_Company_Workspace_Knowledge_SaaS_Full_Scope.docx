@@ -16,6 +16,7 @@ async function ip() { return ((await headers()).get('x-forwarded-for') || 'local
 export async function signUp(_p: ActionResult, fd: FormData): Promise<ActionResult> {
   return guard(async () => {
     if (!rateLimit('signup:' + (await ip()), 10, 3600_000)) throw new UserError('Too many sign-up attempts. Try again in an hour.');
+    if (one<any>("SELECT value FROM settings WHERE key='signups_open'")?.value === '0') throw new UserError('New sign-ups are paused right now. Please contact us to be added.');
     const name = need(str(fd, 'name', 100), 'Enter your name.'); const email = str(fd, 'email', 254).toLowerCase();
     if (!validEmail(email)) throw new UserError('Enter a valid email, for example name@company.com.');
     const pw = String(fd.get('password') || ''); const pe = passwordProblem(pw); if (pe) throw new UserError(pe);

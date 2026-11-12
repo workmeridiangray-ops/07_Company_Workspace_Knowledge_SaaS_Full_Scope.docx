@@ -5,7 +5,7 @@ import { BlocksView } from '@/components/BlocksView';
 import Link from 'next/link';
 export const metadata: Metadata = { title: 'Shared page', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
-export function loadLink(token: string) {
+function loadLink(token: string) {
   const l = one<any>('SELECT * FROM share_links WHERE token=?', token); if (!l) return { error: 'This link is not valid.' } as const; if (l.revoked) return { error: 'This link was revoked by its owner.' } as const; if (l.expires_at && new Date(l.expires_at) < new Date()) return { error: 'This link has expired.' } as const;
   const w = one<any>('SELECT status FROM workspaces WHERE id=?', l.ws); if (!w || w.status === 'closed') return { error: 'This content is no longer available.' } as const;
   const p = one<any>('SELECT * FROM pages WHERE id=? AND ws=? AND deleted_at IS NULL', l.resource_id, l.ws); if (!p) return { error: 'This page is no longer available.' } as const; return { l, p } as const;

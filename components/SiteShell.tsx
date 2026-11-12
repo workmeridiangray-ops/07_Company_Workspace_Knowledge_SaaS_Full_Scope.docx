@@ -2,15 +2,17 @@ import Link from 'next/link';
 import { Icon } from './ui';
 import { BRAND } from '@/lib/site';
 import { getSession } from '@/lib/ctx';
+import { one } from '@/lib/db';
 
 export function Logo({ href = '/' }: { href?: string }) {
   return (<Link href={href} className="inline-flex items-center gap-2 font-semibold text-ink"><span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white"><Icon name="page" size={18} /></span>{BRAND}</Link>);
 }
 const NAV = [['/features', 'Features'], ['/solutions', 'Solutions'], ['/pricing', 'Pricing'], ['/help', 'Help']];
 export async function SiteShell({ children }: { children: React.ReactNode }) {
-  const s = await getSession(); const signedIn = !!(s && !s.expired && !s.pending2fa);
+  const s = await getSession(); const signedIn = !!(s && !s.expired && !s.pending2fa); const banner = one<any>("SELECT value FROM settings WHERE key='maintenance_banner'")?.value;
   return (
     <div className="flex min-h-screen flex-col">
+      {banner && <p role="status" className="bg-warnSoft px-4 py-2 text-center text-sm">{banner}</p>}
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <Logo />

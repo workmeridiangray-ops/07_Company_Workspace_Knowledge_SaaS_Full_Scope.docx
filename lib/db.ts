@@ -25,7 +25,7 @@ export function db() {
   return _db;
 }
 
-export function resetDbForTests() { _db = undefined; }
+export function resetDbForTests() { try { _db?.close(); } catch {} _db = undefined; depth = 0; }
 
 export function all<T = Row>(sql: string, ...p: any[]): T[] {
   return db().prepare(sql).all(...p) as T[];
@@ -36,10 +36,13 @@ export function one<T = Row>(sql: string, ...p: any[]): T | undefined {
 export function run(sql: string, ...p: any[]) {
   return db().prepare(sql).run(...p);
 }
+let depth = 0;
+/** Re-entrant transaction: the outermost call uses BEGIN, nested calls use SAVEPOINTs. */
 export function tx<T>(fn: () => T): T {
-  const d = db();
-  d.exec('BEGIN IMMEDIATE');
-  try { const r = fn(); d.exec('COMMIT'); return r; } catch (e) { d.exec('ROLLBACK'); throw e; }
+  const d = db(); const sp = 'sp' + depth;
+  d.exec(depth === 0 ? 'BEGIN IMMEDIATE' : `SAVEPOINT ${sp}`); depth++;
+  try { const r = fn(); depth--; d.exec(depth === 0 ? 'COMMIT' : `RELEASE ${sp}`); return r; }
+  catch (e) { depth--; d.exec(depth === 0 ? 'ROLLBACK' : `ROLLBACK TO ${sp}; RELEASE ${sp}`); throw e; }
 }
 export function insert(table: string, row: Row) {
   const keys = Object.keys(row);

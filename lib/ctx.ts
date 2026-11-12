@@ -73,7 +73,8 @@ export function assertCan(c: Ctx, p: Perm) { if (!c.perms.has(p)) throw new Forb
 export class Forbidden extends Error { constructor(public perm: string) { super(`Not allowed: ${perm}`); } }
 export class Invalid extends Error {}
 export function writableWorkspace(c: Ctx) {
-  if (['suspended', 'closed', 'closing'].includes(c.ws.status)) throw new Invalid('This workspace is read-only because of its account status.');
+  const live = one<{ status: string }>('SELECT status FROM workspaces WHERE id=?', c.ws.id)?.status ?? c.ws.status; // never trust a stale snapshot
+  if (['suspended', 'closed', 'closing', 'expired'].includes(live)) throw new Invalid('This workspace is read-only because of its account status.');
 }
 export function userWorkspaces(userId: string) {
   return all<any>(`SELECT w.id,w.slug,w.name,w.status,r.name AS role_name FROM memberships m JOIN workspaces w ON w.id=m.ws JOIN roles r ON r.id=m.role_id

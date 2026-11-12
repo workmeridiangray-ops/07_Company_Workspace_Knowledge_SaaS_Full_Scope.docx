@@ -40,7 +40,9 @@ export default function Editor({ slug, pageId, initialTitle, initialBlocks, init
 
   const snapshot = () => JSON.stringify({ t: latest.current.title, b: latest.current.blocks });
   const pushUndo = () => { undo.current.push(snapshot()); if (undo.current.length > 100) undo.current.shift(); redo.current = []; };
-  const mutate = (fn: (b: Block[]) => Block[], opts: { history?: boolean } = {}) => { if (cannotEdit) return; if (opts.history !== false) pushUndo(); setBlocks(b => fn(b)); markDirty(); };
+  const lastTextPush = useRef(0);
+  // Typing is coalesced into one undo step per pause; structural edits always get their own step.
+  const mutate = (fn: (b: Block[]) => Block[], opts: { history?: boolean } = {}) => { if (cannotEdit) return; if (opts.history !== false) { pushUndo(); lastTextPush.current = 0; } else if (Date.now() - lastTextPush.current > 1000) { pushUndo(); lastTextPush.current = Date.now(); } else lastTextPush.current = Date.now(); setBlocks(b => fn(b)); markDirty(); };
 
   const markDirty = () => { setStatus('dirty'); clearTimeout(timer.current); timer.current = setTimeout(save, 900); };
   const save = useCallback(async () => {
